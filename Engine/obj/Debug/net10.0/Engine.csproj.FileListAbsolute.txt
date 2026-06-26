@@ -1,0 +1,11 @@
+/home/losing_author/Desktop/narrative-engine/Engine/bin/Debug/net10.0/Engine.deps.json
+/home/losing_author/Desktop/narrative-engine/Engine/bin/Debug/net10.0/Engine.dll
+/home/losing_author/Desktop/narrative-engine/Engine/bin/Debug/net10.0/Engine.pdb
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.GeneratedMSBuildEditorConfig.editorconfig
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.AssemblyInfoInputs.cache
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.AssemblyInfo.cs
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.csproj.CoreCompileInputs.cache
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.dll
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/refint/Engine.dll
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/Engine.pdb
+/home/losing_author/Desktop/narrative-engine/Engine/obj/Debug/net10.0/ref/Engine.dll
