@@ -1,5 +1,6 @@
 using Engine.AST;
 using Engine.Components;
+using Engine.Events;
 
 namespace Engine.Systems;
 
@@ -13,9 +14,10 @@ public class RuntimeSystem {
     public EngineState State { get; private set; } = EngineState.Reading;
     public StoryNode? CurrentNode { get; private set; }
 
-    public RuntimeSystem(WorldState world, Traceable trace) {
+    public RuntimeSystem(WorldState world, Traceable trace, EventBus? bus = null) {
         _world = world;
         _trace = trace;
+        _bus = bus;
     }
 
     public void LoadNodes(IEnumerable<StoryNode> nodes) {
@@ -31,12 +33,15 @@ public class RuntimeSystem {
 
         CurrentNode = node;
         _trace.RecordVisit(nodeId);
+        _bus?.Publish(new NodeEnteredEvent(nodeId));
 
         State = node.Kind switch {
             NodeKind.Choice => EngineState.Choice,
             _    => EngineState.Reading,
         };
     }
+
+    private readonly EventBus? _bus;
 
     public void ChooseBranch(int index) {
         if (State != EngineState.Choice)
