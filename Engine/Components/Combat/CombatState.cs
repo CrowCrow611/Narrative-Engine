@@ -65,13 +65,12 @@ public class CombatState
     public List<Combatant> Combatants { get; } = new();
     public List<ComboEntry> ComboHistory { get; } = new();
     public int Round { get; set; } = 0;
-    public bool IsActivve { get; set; } = false;
+    public bool IsActive { get; set; } = false;
     public string? VictoryCondition { get; set; }
     public string? DefeatCondition { get; set; }
 
     public string? InitiativeFormula { get; set; }
     public string? WoundFormula { get; set; }
-    public bool IsActive { get; set; } = false;
     public void AddCombatant(Combatant c) => Combatants.Add(c);
 
     public Combatant? Find(string id) => Combatants.FirstOrDefault(c => c.Id == id);

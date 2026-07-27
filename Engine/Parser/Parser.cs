@@ -27,7 +27,7 @@ public class Parser
         {
             var suggestion = Suggest(type, token);
             throw new ParseException(
-                $"excepted {Describe(type)} but found '{token.Value}'{suggestion}", token.Line, token.Column);
+                $"expected {Describe(type)} but found '{token.Value}'{suggestion}", token.Line, token.Column);
         }
         return Advance();
     }
@@ -104,7 +104,7 @@ public class Parser
                 {
                     var t = Peek();
                     throw new ParseException(
-                        $"unxepted '{t.Value}' inside scene '{id.Value}'" + $" - expected 'beat' or 'choice'", 
+                        $"unexpected '{t.Value}' inside scene '{id.Value}'" + $" - expected 'beat' or 'choice'", 
                         t.Line, t.Column);
                 }
             }
@@ -303,7 +303,7 @@ public class Parser
                 {
                     var t = Peek();
                     throw new ParseException(
-                        $"unexpected '{t.Value}' insdie chapter '{title.Value}'" + $"- expected 'scene'",
+                        $"unexpected '{t.Value}' inside chapter '{title.Value}'" + $"- expected 'scene'",
                         t.Line, t.Column);
                 }
             }
@@ -453,8 +453,8 @@ public class Parser
     private static string Suggest(TokenType expected, Token actual) => 
         (expected, actual.Type) switch
         {
-            (TokenType.LBrace, TokenType.Colon) => " - did you forgot '{' after the scene name?",
-            (TokenType.Arrow, TokenType.Colon) => " - did you mean '->' insted of ':' ?",
+            (TokenType.LBrace, TokenType.Colon) => " - did you forget '{' after the scene name?",
+            (TokenType.Arrow, TokenType.Colon) => " - did you mean '->' instead of ':' ?",
             (TokenType.Identifier, TokenType.StringLiteral) => " - scene and node IDs must not be quoted",
             (TokenType.StringLiteral, TokenType.Identifier) => " - beat text must be in quotes",
             _ => ""

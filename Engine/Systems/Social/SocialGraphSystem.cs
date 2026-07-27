@@ -4,22 +4,24 @@ using Engine.Events;
 namespace Engine.Systems.Social;
 
 public record BondFormedEvent(string OwnerId, string TargetId, string Type);
-public record BondStrengthChangedEvent(string OwnerId, string TargetiD,
+public record BondStrengthChangedEvent(string OwnerId, string TargetId,
     float OldStrength, float NewStrength);
 public record BondStageChangedEvent(string OwnerId, string TargetId, 
     BondStage OldStage, BondStage NewStage);
 public record BondBrokenEvent(string OwnerId, string TargetId, string Type);
 
-public class SocialGraphSystem
+public class SocialGraphSystem : IEffectHandler
 {
     private readonly EventBus? _bus;
     private readonly EffectDispatchSystem? _effects;
+    private readonly SocialGraph? _graph;
 
     public SocialGraphSystem(EventBus? bus = null,
-        EffectDispatchSystem? effects = null)
+        EffectDispatchSystem? effects = null, SocialGraph? graph = null)
     {
         _bus = bus;
         _effects = effects;
+        _graph = graph;
     }
 
     public Bond FormBond(SocialGraph graph, string ownerId,
@@ -38,10 +40,10 @@ public class SocialGraphSystem
         return bond;
     }
 
-    public void ModifyStrength(SocialGraph graph, string owenerId,
+    public void ModifyStrength(SocialGraph graph, string ownerId,
         string targetId, float delta)
     {
-        var bond = graph.GetBond(owenerId, targetId);
+        var bond = graph.GetBond(ownerId, targetId);
         if (bond is null) return;
 
         var oldStrength = bond.Strength;
@@ -53,14 +55,14 @@ public class SocialGraphSystem
         if (Math.Abs(oldStrength - bond.Strength) < 0.001f) return;
 
         _bus?.Publish(new BondStrengthChangedEvent(
-            owenerId, targetId, oldStrength, bond.Strength));
+            ownerId, targetId, oldStrength, bond.Strength));
 
         var newStage = bond.CalculateStage();
         if (newStage != oldStage)
         {
             bond.Stage = newStage;
             _bus?.Publish(new BondStageChangedEvent(
-                owenerId, targetId, oldStage, newStage));
+                ownerId, targetId, oldStage, newStage));
         }
     }
 
@@ -95,11 +97,37 @@ public class SocialGraphSystem
     public BondStage GetStage(SocialGraph graph, string ownerId, string targetId) =>
         graph.GetBond(ownerId, targetId)?.Stage ?? BondStage.Stranger;
 
-    public bool AreMutallyBonded(SocialGraph graph, 
+    public bool AreMutuallyBonded(SocialGraph graph, 
         string idA, string idB) =>
         graph.HasBond(idA, idB) && graph.HasBond(idB, idA);
 
     public float GetMutualStrength(SocialGraph graph,
         string idA, string idB) =>
         (GetStrength(graph, idA, idB) + GetStrength(graph,idB, idA)) / 2f;
+
+    public bool CanHandle(string prefix) => prefix == "bond";
+
+    public void Apply(string effect)
+    {
+        var parts = effect.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 3)
+            throw new InvalidOperationException($"Malformed bond effect: ''{effect}");
+
+        var path = parts[0].Split('.');
+        if (path.Length != 4 || path[0] != "bond" || path[3] != "type")
+            throw new InvalidOperationException($"Unsupported bond effect: '{effect}'");
+
+        if (_graph is null)
+            throw new InvalidOperationException(
+                "SocialGraphSystem has no SocialGraph registered.");
+
+        var ownerId = path[1];
+        var targetId = path[2];
+
+        var bond = _graph.GetBond(ownerId, targetId);
+        if (bond is null)
+            throw new InvalidOperationException($"No bond from '{ownerId}' to '{targetId}'.");
+
+        bond.Type = parts[2];
+    }
 }

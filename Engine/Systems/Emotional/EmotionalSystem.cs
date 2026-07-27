@@ -4,17 +4,18 @@ using Engine.Events;
 namespace Engine.Systems;
 
 public record EmotionTCE(
-    string EntityI,
+    string EntityId,
     string EmotionName,
     float Intensity,
     float Threshold,
     List<string> Effects
 );
 
-public class EmotionalSystem
+public class EmotionalSystem : IEffectHandler
 {
     private readonly EventBus? _bus;
     private readonly EffectDispatchSystem? _effects;
+    private readonly Dictionary<string, EmotionalState> _states = new();
 
     public EmotionalSystem(EventBus? bus = null,
         EffectDispatchSystem? effects = null)
@@ -22,6 +23,8 @@ public class EmotionalSystem
         _bus = bus;
         _effects = effects;
     }
+
+    public void RegisterState(string actorId, EmotionalState state) => _states[actorId] = state;
 
     public void Step(string entityId, EmotionalState state, float deltaTime)
     {
@@ -95,5 +98,26 @@ public class EmotionalSystem
                 throw new InvalidOperationException(
                         $"Unknown emotion Property: '{property}'");
         }
+    }
+
+    public bool CanHandle(string prefix) => prefix == "emotion";
+
+    public void Apply(string effect)
+    {
+        var parts = effect.Trim().Split(' ');
+        if (parts.Length != 3)
+            throw new InvalidOperationException($"Invalid emotion effect: '{effect}'");
+
+        var path = parts[0].Split('.');
+        if (path.Length != 4 || path[0] != "emotion")
+            throw new InvalidOperationException(
+                $"Invalid routed emotion effect path: '{parts[0]}'. Expected emotion.<actorId>.<anme>.<property>");
+
+        var actorId = path[1];
+        if (!_states.TryGetValue(actorId, out var state))
+            throw new InvalidOperationException($"No EmotionalState registered for actor '{actorId}'");
+
+        var innerEffect = $"emotion.{path[2]}.{path[3]} {parts[1]} {parts[2]}";
+        ApplyEffect(state, innerEffect);
     }
 }

@@ -10,14 +10,18 @@ public class RuntimeSystem {
     private readonly Dictionary<string, StoryNode> _nodes = new();
     private readonly WorldState _world;
     private readonly Traceable _trace;
+    private readonly EventBus? _bus;
+    private readonly ConditionEvetorSys? _conditions;
 
     public EngineState State { get; private set; } = EngineState.Reading;
     public StoryNode? CurrentNode { get; private set; }
 
-    public RuntimeSystem(WorldState world, Traceable trace, EventBus? bus = null) {
+    public RuntimeSystem(WorldState world, Traceable trace, EventBus? bus = null,
+        ConditionEvetorSys? conditions = null) {
         _world = world;
         _trace = trace;
         _bus = bus;
+        _conditions = conditions;
     }
 
     public void LoadNodes(IEnumerable<StoryNode> nodes) {
@@ -37,11 +41,9 @@ public class RuntimeSystem {
 
         State = node.Kind switch {
             NodeKind.Choice => EngineState.Choice,
-            _    => EngineState.Reading,
+            _ => EngineState.Reading,
         };
     }
-
-    private readonly EventBus? _bus;
 
     public void ChooseBranch(int index) {
         if (State != EngineState.Choice)
@@ -50,7 +52,13 @@ public class RuntimeSystem {
 
         if (CurrentNode is null || index < 0 || index >= CurrentNode.Branches.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
+
         var branch = CurrentNode.Branches[index];
+
+        if (_conditions is not null && !_conditions.Evaluate(branch.Condition))
+            throw new InvalidOperationException(
+                $"Branch '{branch.TargetId}' condition '{branch.Condition}' not met.");
+
         EnterNode(branch.TargetId);
     }
 
