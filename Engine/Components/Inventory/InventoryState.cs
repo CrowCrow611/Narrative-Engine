@@ -8,6 +8,9 @@ public class ItemDefinition
     public int MaxStack { get; set; } = 1;
     public List<string> Tags { get; } = new();
     public Dictionary<string, string> Properties { get; } = new();
+    public float? MaxDurability { get; set; }
+    public bool AutoBreakOnZero { get; set; } = true;
+    public List<string> BreakEffects { get; } = new();
 
     public ItemDefinition(string id, string displayName)
     {
@@ -22,6 +25,8 @@ public class ItemStack
 {
     public ItemDefinition Item { get; }
     public int Quantity { get; set; }
+
+    public float? CurrentDurability { get; set; }
 
     public ItemStack(ItemDefinition item, int quantity = 1)
     {
